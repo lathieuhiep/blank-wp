@@ -6,8 +6,11 @@
     <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
-<header>
-    <nav>
-        <?php wp_nav_menu( array( 'theme_location' => 'main_menu' ) ); ?>
-    </nav>
-</header>
+
+<?php if ( !is_404() ) : ?>
+    <header>
+        <nav>
+            <?php wp_nav_menu( array( 'theme_location' => 'main_menu' ) ); ?>
+        </nav>
+    </header>
+<?php endif; ?>
