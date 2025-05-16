@@ -33,16 +33,15 @@ add_action('wp_enqueue_scripts', 'blankwp_remove_wp_block_library_css', 100);
 function blankwp_enqueue_scripts(): void
 {
     // enqueue style
-    wp_enqueue_style('main-style', get_theme_file_uri('/assets/css/style-main.css'), array(), wp_get_theme()->get('Version'));
+    wp_enqueue_style('main-style', get_theme_file_uri('/assets/css/style-main.min.css'), array(), wp_get_theme()->get('Version'));
 
     // enqueue style page 404
     if (is_404()) {
-        wp_enqueue_style('style-404', get_theme_file_uri('/assets/css/style-404.css'), array(), wp_get_theme()->get('Version'));
+        wp_enqueue_style('page-404', get_theme_file_uri('/assets/css/page-templates/page-404.min.css'), array(), wp_get_theme()->get('Version'));
     }
 
-
     // enqueue script
-    wp_enqueue_script('theme-main', get_theme_file_uri('/assets/js/theme-main.js'), array('jquery'), wp_get_theme()->get('Version'), true);
+    wp_enqueue_script('theme-main', get_theme_file_uri('/assets/js/theme-main.min.js'), array('jquery'), wp_get_theme()->get('Version'), true);
 
     // Enqueue comment-reply script if needed
     if (is_singular() && comments_open() && get_option('thread_comments')) {
