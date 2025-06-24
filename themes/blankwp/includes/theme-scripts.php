@@ -26,27 +26,42 @@ function blankwp_remove_wp_block_library_css(): void
     wp_dequeue_style('wc-blocks-style');
     wp_dequeue_style('storefront-gutenberg-blocks');
 }
-
 add_action('wp_enqueue_scripts', 'blankwp_remove_wp_block_library_css', 100);
+
+// custom enqueue jQuery first
+function blankwp_custom_enqueue_jquery_first(): void
+{
+    if ( ! is_admin() ) {
+        // deregister the default jQuery
+        wp_deregister_script( 'jquery' );
+
+        // register and enqueue the jQuery script
+        wp_register_script( 'jquery', includes_url( '/js/jquery/jquery.min.js' ), array(), null, true );
+        wp_enqueue_script( 'jquery' );
+    }
+}
+add_action( 'wp_enqueue_scripts', 'blankwp_custom_enqueue_jquery_first', 1 );
 
 // Enqueue scripts and styles
 function blankwp_enqueue_scripts(): void
 {
-    // enqueue style
-    wp_enqueue_style('main-style', get_theme_file_uri('/assets/css/style-main.min.css'), array(), wp_get_theme()->get('Version'));
+    // include bootstrap css
+    wp_enqueue_style('bootstrap', get_theme_file_uri('/assets/vendors/bootstrap/bootstrap.min.css'), array(), '5.3.7');
+
+    // enqueue style theme
+    wp_enqueue_style('blankwp-main', get_theme_file_uri('/assets/css/main.bundle.min.css'), array(), wp_get_theme()->get('Version'));
 
     // enqueue style page 404
     if (is_404()) {
-        wp_enqueue_style('page-404', get_theme_file_uri('/assets/css/page-templates/page-404.min.css'), array(), wp_get_theme()->get('Version'));
+        wp_enqueue_style('blankwp-page-404', get_theme_file_uri('/assets/css/page-templates/page-404.min.css'), array(), wp_get_theme()->get('Version'));
     }
 
-    // enqueue script
-    wp_enqueue_script('theme-main', get_theme_file_uri('/assets/js/theme-main.min.js'), array('jquery'), wp_get_theme()->get('Version'), true);
+    // enqueue script theme
+    wp_enqueue_script('blankwp-main', get_theme_file_uri('/assets/js/main.bundle.min.js'), array('jquery'), wp_get_theme()->get('Version'), true);
 
     // Enqueue comment-reply script if needed
     if (is_singular() && comments_open() && get_option('thread_comments')) {
         wp_enqueue_script('comment-reply');
     }
 }
-
 add_action('wp_enqueue_scripts', 'blankwp_enqueue_scripts');

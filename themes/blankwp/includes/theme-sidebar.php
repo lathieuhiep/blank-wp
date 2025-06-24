@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-function blank_wp_widgets_init(): void
+function blankwp_widgets_init(): void
 {
     register_sidebar(
         array(
@@ -17,4 +17,4 @@ function blank_wp_widgets_init(): void
         )
     );
 }
-add_action( 'widgets_init', 'blank_wp_widgets_init' );
+add_action( 'widgets_init', 'blankwp_widgets_init' );

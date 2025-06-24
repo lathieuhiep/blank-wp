@@ -23,16 +23,17 @@ const themeName = 'blankwp';
 // Đường dẫn file
 const paths = {
     node_modules: 'node_modules/',
-    theme: {
-        scss: 'src/theme/scss/',
-        js: 'src/theme/js/'
-    },
+    vendors: 'src/vendors/',
     plugins: {
         root: 'src/plugins/',
         efa: {
             scss: `src/plugins/${pluginNameEFA}/scss/`,
             js: `src/plugins/${pluginNameEFA}/js/`
         }
+    },
+    theme: {
+        scss: 'src/theme/scss/',
+        js: 'src/theme/js/'
     },
     shared: {
         scss: 'src/shared/scss/',
@@ -44,6 +45,7 @@ const paths = {
             css: `themes/${themeName}/assets/css/`,
             js: `themes/${themeName}/assets/js/`,
             libs: `themes/${themeName}/assets/libs/`,
+            woo: `themes/${themeName}/includes/woocommerce/assets/`
         },
         plugins: {
             root: 'plugins/',
@@ -69,10 +71,28 @@ function server() {
     })
 }
 
-// Task build theme
-// css
+// Task build vendors libraries
+function buildStyleVendors() {
+    return src(`${paths.vendors}*/**.scss`)
+        .pipe(plumber({
+            errorHandler: function (err) {
+                console.error('SCSS Style Vendors Error:', err.message);
+                this.emit('end');
+            }
+        }))
+        .pipe(sass({
+            outputStyle: 'expanded',
+            includePaths: ['node_modules', 'src']
+        }, '').on('error', sass.logError))
+        .pipe(cleanCSS({level: 2}))
+        .pipe(rename({suffix: '.min'}))
+        .pipe(dest(`${paths.output.theme.root}vendors`))
+        .pipe(browserSync.stream())
+}
+
+// Task build style theme
 function buildStyleTheme() {
-    return src(`${paths.theme.scss}style-main.scss`)
+    return src(`${paths.theme.scss}main.scss`)
         .pipe(plumber({
             errorHandler: function (err) {
                 console.error('SCSS Style Theme Error:', err.message);
@@ -82,10 +102,11 @@ function buildStyleTheme() {
         .pipe(gulpIf(isDev, sourcemaps.init()))
         .pipe(sass({
             outputStyle: 'expanded',
-            includePaths: ['node_modules']
+            includePaths: ['node_modules', 'src']
         }, '').on('error', sass.logError))
 
         // --- Xuất file chưa min ---
+        .pipe(rename({suffix: '.bundle'}))
         .pipe(dest(`${paths.output.theme.css}`))
 
         // --- Tạo bản minified ---
@@ -96,29 +117,6 @@ function buildStyleTheme() {
         .pipe(browserSync.stream())
 }
 
-// style page templates
-function buildStylePageTemplate() {
-    return src(`${paths.theme.scss}page-templates/*.scss`)
-        .pipe(plumber({
-            errorHandler: function (err) {
-                console.error(err.message);
-                this.emit('end');
-            }
-        }))
-        .pipe(gulpIf(isDev, sourcemaps.init()))
-        .pipe(sass({
-            outputStyle: 'expanded'
-        }, '').on('error', sass.logError))
-        .pipe(cleanCSS({
-            level: 2
-        }))
-        .pipe(rename({suffix: '.min'}))
-        .pipe(gulpIf(isDev, sourcemaps.write()))
-        .pipe(dest(`${paths.output.theme.css}page-templates/`))
-        .pipe(browserSync.stream())
-}
-
-// js
 function buildJSTheme() {
     return src([
         `${paths.theme.js}*.js`
@@ -132,7 +130,7 @@ function buildJSTheme() {
         .pipe(webpack({
             mode: 'production',
             output: {
-                filename: 'theme-main.min.js'
+                filename: 'main.bundle.min.js'
             },
             module: {
                 rules: [
@@ -169,15 +167,17 @@ function buildJSTheme() {
         .pipe(browserSync.stream())
 }
 
-// Task build all
-async function buildAll() {
+/*
+Task build project
+* */
+async function buildProject() {
     // theme
+    await buildStyleVendors()
     await buildStyleTheme()
-    await buildStylePageTemplate()
 
     await buildJSTheme()
 }
-exports.buildAll = buildAll
+exports.buildProject = buildProject
 
 // Task watch
 function watchTask() {
@@ -185,13 +185,14 @@ function watchTask() {
 
     // theme watch
     watch([
-        `${paths.theme.scss}style-main.scss`,
-    ], buildStyleTheme)
+        `${paths.vendors}*/**.scss`,
+    ], buildStyleVendors)
 
     watch([
-        `${paths.theme.scss}page-templates/*.scss`
-    ], buildStylePageTemplate)
+        `${paths.theme.scss}main.scss`,
+    ], buildStyleTheme)
 
     watch([`${paths.theme.js}*.js`], buildJSTheme)
 }
+
 exports.watchTask = watchTask
