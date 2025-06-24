@@ -1,7 +1,7 @@
 <?php
 get_header(); ?>
 
-<main id="primary" class="site-main">
+
     <?php if ( have_posts() ) : ?>
 
         <header class="page-header">
@@ -38,8 +38,7 @@ get_header(); ?>
         </section>
 
     <?php endif; ?>
-</main><!-- #primary -->
+
 
 <?php
-get_sidebar();
 get_footer();
